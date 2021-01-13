@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>타이머</title>
+    <style>
+      ul {
+        padding: 0 0;
+        max-width: 200px;
+      }
+      li {
+        border: 1px solid #ccc;
+        list-style-type: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <input
+        type="text"
+        onkeypress="javascript:if(event.keyCode ===13){registAndStartNewTimer()}"
+      />
+      <ul id="timerArea"></ul>
+      <button onclick="stopAllTimer()">모두 완료</button>
+    </div>
+    <script>
+      "use strict"
+
+      const timerArea = document.getElementById("timerArea")
+      const timerList = {}
+
+      let lastIndex = 0
+
+      function renderInitTimer(timerId, maxTimerCount) {
+        const liElement = document.createElement("LI")
+        liElement.id = timerId
+        liElement.innerHTML = `${timerId} : ${maxTimerCount}`
+        timerArea.append(liElement)
+      }
+
+      function renderUpdatedTimer(timerId, remainingTimerCount) {
+        const liElement = document.getElementById(timerId)
+        liElement.innerHTML = `${timerId} : ${remainingTimerCount}`
+      }
+
+      function removeTimer(timerId) {
+        document.getElementById(timerId).remove()
+      }
+
+      function removeTimerAll(timerId) {
+        timerArea.innerHTML = ""
+      }
+
+      function registAndStartNewTimer() {
+        const maxTimerCount = event.target.value
+
+        if (maxTimerCount <= 60 && maxTimerCount > 0) {
+          const timerId = `timer${lastIndex + 1}`
+          lastIndex += 1
+          renderInitTimer(timerId, maxTimerCount)
+          timerList[timerId] = new Timer(maxTimerCount)
+          timerList[timerId].startTimer()
+          timerList[timerId].countChangedListener((remainingTimerCount) => {
+            if (remainingTimerCount)
+              renderUpdatedTimer(timerId, remainingTimerCount)
+            else removeTimer(timerId)
+          })
+          event.target.value = ""
+        } else {
+          alert("0 ~ 60 까지의 숫자만 입력가능합니다. (0~60초)")
+          event.target.value = ""
+        }
+      }
+
+      function stopAllTimer() {
+        removeTimerAll()
+        for (const key in timerList) {
+          console.log(timerList)
+          timerList[key].stopTimer()
+          delete timerList[key]
+        }
+        console.log(timerList)
+      }
+
+      class Timer {
+        constructor(maxTimerCount) {
+          this.maxTimerCount = maxTimerCount
+          this.remainingCount = maxTimerCount
+          this.count = 0
+          this.counter
+        }
+
+        set count(val) {
+          this.internalValue = val
+        }
+
+        get count() {
+          return this.internalValue
+        }
+
+        startTimer() {
+          this.counter = setInterval(() => {
+            this.count += 1
+            this.remainingCount = this.maxTimerCount - this.count
+            this.countChanged(this.remainingCount)
+            // console.log(this.remainingCount)
+            if (!this.remainingCount) this.stopTimer()
+          }, 1000)
+        }
+
+        stopTimer() {
+          this.count = 0
+          clearInterval(this.counter)
+        }
+
+        countChanged(val) {}
+
+        countChangedListener(listener) {
+          this.countChanged = listener
+        }
+      }
+    </script>
+  </body>
+</html>
