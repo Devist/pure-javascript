@@ -1,3 +1,5 @@
 # pure-javascript
 
-1. [multi-timer branch](https://github.com/Devist/pure-javascript/tree/multi-timer)
+https://ko.javascript.info/closure
+
+해당 강의의 과제 해결
