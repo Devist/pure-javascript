@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <script>
+      //위에서 구현한 캐싱 데코레이터는 객체 메서드에 사용하기엔 적합하지 않음
+
+      /**
+       * call -> this를 명시적으로 고정해 함수를 호출할 수 있게 해줌
+       * */
+
+      /**
+       * 버전A
+       * */
+      function sayHi() {
+        alert(this.name)
+      }
+
+      let user = { name: "John" }
+      let admin = { name: "Admin" }
+
+      // call을 사용해 원하는 객체가 'this'가 되도록 함
+      sayHi.call(user) // this = John
+      sayHi.call(admin) // this = Admin
+
+      /**
+       * 버전B
+       * */
+      function say(phrase) {
+        alert(this.name + ": " + phrase)
+      }
+      let user = { name: "John" }
+
+      //this엔 user가 고정되고, "Hello"는 메서드의 첫 번째 인수가 됨
+      say.call(user, "Hello")
+
+      /**
+       * 업데이트된 캐싱데코레이터
+       * */
+      let worker = {
+        someMethod() {
+          return 1
+        },
+
+        slow(x) {
+          alert(`slow(${x})을/를 호출함`)
+          return x * this.someMethod()
+        }
+      }
+
+      function cachingDecorator(func) {
+        let cache = new Map()
+        return function (x) {
+          if (cache.has(x)) return cache.get(x)
+
+          let result = func.call(this, x) // 이젠 'this'가 제대로 전달됨
+          cache.set(x, result)
+          return result
+        }
+      }
+
+      worker.slow = cachingDecorator(worker.slow) // 캐싱 데코레이터 적용
+
+      alert(worker.slow(2)) // 제대로 동작
+      alert(worker.slow(2)) // 제대로 동작. 다만, 원본 함수가 호출되지 않고 캐시된 값이 출력됨
+    </script>
+  </body>
+</html>
